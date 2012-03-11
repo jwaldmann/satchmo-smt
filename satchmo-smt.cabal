@@ -1,0 +1,21 @@
+Name:           satchmo-smt
+Version:        0.0
+
+License:        GPL
+License-file:	gpl-2.0.txt
+Author:         Johannes Waldmann
+Maintainer:	Johannes Waldmann
+Homepage:       http://dfa.imn.htwk-leipzig.de/satchmo/
+Synopsis:       SMT solver via SAT encoding
+description:	SMT solver via SAT encoding
+Category:	Algorithms
+Cabal-version: >= 1.2
+Build-type: Simple
+
+Executable satchmo-smt
+    Main-is: Main.hs
+    ghc-options: -threaded -rtsopts
+    hs-source-dirs:	.
+    Build-depends: satchmo>=2.1, smt-lib>=0.0.2.1,
+        process, base == 4.*, containers, array, mtl
+
