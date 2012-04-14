@@ -148,6 +148,7 @@ command dict c = case c of
 
     Set_logic "QF_LIA" -> return ()
     Set_logic "QF_LRA" -> return ()
+    Set_logic "QF_IDL" -> return ()
 
     Set_info _ -> return ()
 
@@ -189,9 +190,17 @@ term dict f = case f of
     Term_spec_constant ( Spec_constant_numeral n ) -> do
         c <- lift $ nconstant dict n
         return $ Code_Integer c
+    Term_qual_identifier ( Qual_identifier ( Identifier "true"  ))  -> do
+        b <- lift $ bconstant dict True
+        return $ Code_Bool b
+    Term_qual_identifier ( Qual_identifier ( Identifier "false"  ))  -> do
+        b <- lift $ bconstant dict False
+        return $ Code_Bool b
     Term_qual_identifier ( Qual_identifier ( Identifier fun  ))  -> do
         m <- get 
-        return $ m M.! fun
+        return $ case M.lookup fun m of
+            Just v -> v
+            Nothing -> error $ "Satchmo.SMT.Solve: " ++ show fun
     Term_qual_identifier_ ( Qual_identifier ( Identifier fun  )) args -> 
         case fun of
             "not" -> do [Code_Bool x] <- forM args $ term dict 

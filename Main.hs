@@ -4,7 +4,7 @@
 -- Solver uses bit blasting where details of the encoding
 -- can be chosen via command line parameters.
 
--- Accepts input logic QF_LIA, QF_LRA
+-- Accepts input logic QF_LIA, QF_LRA, QF_IDL
 -- but actually all variables are assumed to be non-negative integers.
 
 -- Assumption: input contains exactly one (check-sat)
