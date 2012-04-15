@@ -10,9 +10,6 @@
 -- Assumption: input contains exactly one (check-sat)
 -- followed by (get-value) for all global names.
 
--- Assumption: input does not contain local bindings (LET)
-
-
 import Satchmo.SMT.Config
 import Satchmo.SMT.Solve
 
