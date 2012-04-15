@@ -16,6 +16,6 @@ Executable satchmo-smt
     Main-is: Main.hs
     ghc-options: -threaded -rtsopts
     hs-source-dirs:	.
-    Build-depends: satchmo>=2.1, smt-lib>=0.0.2.1,
+    Build-depends: satchmo>=2.1, smt-lib>=0.0.4,
         process, base == 4.*, containers, array, mtl
 
