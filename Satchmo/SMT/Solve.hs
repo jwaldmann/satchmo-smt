@@ -182,6 +182,9 @@ command dict c = case c of
 
     Check_sat -> return ()
     Get_value _ -> return ()
+    
+    Exit -> return ()
+
     _ -> error $ "cannot handle command " ++ show c    
 
 term :: SolverC m n b
@@ -238,6 +241,14 @@ term dict f = case f of
             "+" -> do xs <- forM args $ term dict 
                       fmap Code_Integer $ lift $ plus dict $ map unint xs
 
+            "-" -> do xs <- forM args $ term dict 
+                      fmap Code_Integer $ lift $ minus dict $ map unint xs
+
+            "*" -> do let [ num , arg ] = args
+                      val <- term dict arg
+                      fmap Code_Integer $ lift 
+                           $ mul_by_const dict (integer num) $ unint val
+
             _ -> error $ "Satchmo.SMT.Solve.term.1: " ++ show f
     _ -> error $ "Satchmo.SMT.Solve.term.2: " ++ show f
 
@@ -245,5 +256,37 @@ term dict f = case f of
 unbool (Code_Bool b) = b
 unint ( Code_Integer i ) = i
 
+integer t = case t of
+   Term_spec_constant ( Spec_constant_numeral n ) -> n
+   Term_qual_identifier_ (Qual_identifier (Identifier "-")) [ arg ] -> 
+       integer arg
+   _ -> error $ unwords [ "integer", show t ]
+
+
+mul_by_const dict f x | f < 0 = error "huh"
+mul_by_const dict 0 x = nconstant dict 0
+mul_by_const dict 1 x = return x
+mul_by_const dict f x = do
+    let (d,m) = divMod f 2
+    y <- mul_by_const dict d x
+    z <- add dict x x    
+    case m of
+        0 -> return y
+        1 -> add dict y x
+
 plus dict (x:xs) = foldM (add dict) x xs
 
+minus dict [ x ] = do
+    z <- nconstant dict 0
+    sub dict z x
+    
+minus dict [ x,y ] = do
+    sub dict x y
+    
+sub dict x y = do    
+    d <- number dict
+    s <- add dict y d
+    e <- neq dict x s
+    assert dict [e]
+    return d
+    
