@@ -4,6 +4,7 @@
 {-# language FlexibleContexts #-}
 {-# language MultiParamTypeClasses #-}
 {-# language ConstraintKinds #-}
+{-# language ExistentialQuantification #-}
 
 module Satchmo.SMT.Solve where
 
@@ -13,6 +14,8 @@ import qualified Prelude
 import Satchmo.SMT.Config
 import Satchmo.SMT.Dictionary
 import Satchmo.SMT.ToTerm
+
+import Satchmo.SAT.Mini (SAT)
 
 import qualified Satchmo.Boolean as B
 import qualified Satchmo.SAT.Mini
@@ -71,14 +74,19 @@ execute0 conf s = do
         forkIO $ killThread pid
         return Nothing
 
+data D = forall n . Decode SAT n Integer => D (Dictionary SAT n Integer)
 
-
-solve_script conf s = Satchmo.SAT.Mini.solve $ 
-    case encoding conf of
-        Unary { bits = b } -> evalStateT (script (unary_fixed b) s) ( M.empty )
-        Binary { bits = b } -> evalStateT (script (binary_fixed b) s) ( M.empty )
-
-
+solve_script conf s = do
+    let b = bits conf ; a = unary_addition conf
+        dict = case (encoding conf, extension conf) of
+            (Unary, Fixed) -> D $ unary_fixed b a
+            (Unary, Flexible) -> D $ unary_flexible b a
+            (Binary, Fixed) -> D $ binary_fixed b
+            (Binary, Flexible) -> D $ binary_flexible b
+    case dict of 
+        D d -> do
+            hPutStrLn stderr $ info d
+            Satchmo.SAT.Mini.solve $ evalStateT (script d s) M.empty
 
 type Solver m n  = StateT (M.Map Symbol ( Code n )) m 
 
