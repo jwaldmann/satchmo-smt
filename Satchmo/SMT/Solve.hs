@@ -190,6 +190,8 @@ command dict c = case c of
 term :: SolverC m n b
        => Dictionary m n b -> Term -> Solver m n b ( Code n b )
 term dict f = case f of
+    Term_attributes f [ Attribute_s_expr ":named" _ ] -> do
+        term dict f
     Term_spec_constant ( Spec_constant_numeral n ) -> do
         c <- lift $ nconstant dict n
         return $ Code_Integer c
