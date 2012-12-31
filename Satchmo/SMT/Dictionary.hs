@@ -3,14 +3,17 @@ module Satchmo.SMT.Dictionary where
 import Language.SMTLIB
 import qualified Satchmo.Boolean as B
 
-data Domain = Int | Arctic | Tropical | Fuzzy  deriving ( Show, Eq )
+data Domain = Int | Arctic | Tropical | Fuzzy  
+    deriving ( Show, Eq )
 
 data Dictionary m num val = Dictionary
     { info :: String
     , domain :: Domain
     , number   :: m num
-    , nconstant :: Integer -> m num
+    , nconstant :: val -> m num
     , add :: num -> num -> m num
+    , times :: num -> num -> m num
+    , positive :: num -> m B.Boolean
     , gt :: num -> num -> m B.Boolean
     , ge :: num -> num -> m B.Boolean
     , neq :: num -> num -> m B.Boolean -- ^ numeric equal (not: not equal)

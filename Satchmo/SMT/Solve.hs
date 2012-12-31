@@ -91,11 +91,14 @@ solve_script conf s = do
 type Solver m n  = StateT (M.Map Symbol ( Code n )) m 
 
 type SolverC m n v = 
-    ( Functor m, Monad m, Decode m n v, Decode m B.Boolean Bool, ToTerm v )
+    ( Functor m, Monad m
+    , Decode m n v, Decode m B.Boolean Bool
+    , Num v , ToTerm v )
 
 
 script :: ( SolverC m n v )
-       => Dictionary m n v -> Script -> Solver m n (m [( Term, Term)] ) 
+       => Dictionary m n v
+       -> Script -> Solver m n (m [( Term, Term)] ) 
 script (dict :: Dictionary m n v) (Script cs) =  do
     forM_ cs $ command dict
     m <- get
@@ -117,7 +120,8 @@ bool2term b =
 
 
 command :: SolverC m n v
-       => Dictionary m n v -> Command -> Solver m n ()
+       => Dictionary m n v 
+       -> Command -> Solver m n ()
 command dict c = case c of
     Set_option ( Produce_models True ) -> return ()
 
@@ -166,12 +170,14 @@ command dict c = case c of
     _ -> error $ "cannot handle command " ++ show c    
 
 term :: SolverC m n v
-       => Dictionary m n v -> Term -> Solver m n ( Code n )
+       => Dictionary m n v
+       -> Term 
+       -> Solver m n ( Code n )
 term dict f = case f of
     Term_attributes f [ Attribute_s_expr ":named" _ ] -> do
         term dict f
     Term_spec_constant ( Spec_constant_numeral n ) -> do
-        c <- lift $ nconstant dict n
+        c <- lift $ nconstant dict $ fromIntegral n
         return $ Code_Number c
     Term_qual_identifier ( Qual_identifier ( Identifier "true"  ))  -> do
         b <- lift $ bconstant dict True
