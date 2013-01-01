@@ -56,11 +56,12 @@ matrix :: (Monad m, S.Semiring val)
        => D.Dictionary m num val
        -> Dictionary m num val
 matrix  d = Dictionary
-    { make = \ (w, h) -> do
-         cs <- forM [1..h] $ \ r ->
-               forM [1..w] $ \ c ->
+    { make = \ (to, from) -> do
+         cs <- forM [1..to] $ \ r ->
+               forM [1..from] $ \ c ->
                     D.number d
-         return $ Matrix { dim = (w,h), contents = cs} 
+         return $ Matrix { dim = (to,from)
+                         , contents = cs} 
     , decode = \ m -> case m of 
          Zero {} -> return $ Zero (dim m) 
          Unit {} -> return $ Unit (dim m) 
