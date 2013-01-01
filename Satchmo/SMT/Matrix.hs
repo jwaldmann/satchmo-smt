@@ -14,10 +14,10 @@ data Matrix a
               , contents :: [[a]] }
     deriving Show
 
-height = fst . dim ; width = snd . dim
+to = fst . dim ; from = snd . dim
 
 data Dictionary m num val =
-     Dictionary { make :: m (Matrix num)
+     Dictionary { make :: (Int,Int) -> m (Matrix num)
                 , weakly_monotone :: 
                       Matrix num -> m B.Boolean
                 , strictly_monotone :: 
@@ -38,24 +38,23 @@ data Dictionary m num val =
 
 expand d a = case a of
     Zero {} -> do
-        cs <- forM [1 .. height a] $ \ h ->
-              forM [1 .. width  a] $ \ w -> 
+        cs <- forM [1 .. to a] $ \ h ->
+              forM [1 .. from  a] $ \ w -> 
               D.nconstant d S.zero
         return $ Matrix {dim=dim a, contents = cs}
     Unit {} -> do
-        cs <- forM [1 .. height a] $ \ h ->
-              forM [1 .. width  a] $ \ w -> 
+        cs <- forM [1 .. to a] $ \ h ->
+              forM [1 .. from  a] $ \ w -> 
               D.nconstant d
                   $ if h==w then S.one else S.zero
         return $ Matrix {dim=dim a, contents = cs}
     Matrix {} -> return a
        
 matrix :: (Monad m, S.Semiring val)
-       => (Int,Int)
-       -> D.Dictionary m num val
+       => D.Dictionary m num val
        -> Dictionary m num val
-matrix (w, h) d = Dictionary
-    { make = do
+matrix  d = Dictionary
+    { make = \ (w, h) -> do
          cs <- forM [1..h] $ \ r ->
                forM [1..w] $ \ c ->
                     D.number d
@@ -77,15 +76,13 @@ matrix (w, h) d = Dictionary
             return $ Matrix { dim = dim a
                             , contents = css }
     , times = \ a b -> case (a,b) of
-        _ | width a /= height b -> error "Matrix.times"
+        _ | from a /= to b -> error "Matrix.times"
         (Zero{}, _) -> return a
         (_, Zero{}) -> return b
         (Unit{}, _) -> return b
         (_, Unit{}) -> return a
         (Matrix{},Matrix{}) -> do
-            let bfoldM f [x] = return x
-                bfoldM f (x:y:zs) = do
-                    xy <- f x y ; bfoldM f (zs ++ [xy])
+            let 
                 dot xs ys = do
                     xys <- forM (zip xs ys) $ \(x,y) ->
                         D.times d x y
@@ -93,13 +90,12 @@ matrix (w, h) d = Dictionary
             css <- forM (contents a) $ \ row ->
                forM (transpose $ contents b) $ \ col ->
                dot row col
-            return $ Matrix { dim = (height a,width b)
+            return $ Matrix { dim = (to a,from b)
                             , contents = css }
     , strictly_greater = \ a b -> case (a,b) of
          _ | D.domain d /= D.Int -> 
              error "Matrix.strictly_greater"
-         (Zero{}, Zero{}) -> D.bconstant d False
-         (Zero{}, Unit{}) -> D.bconstant d False
+         (Zero{}, _) -> D.bconstant d False
          (Unit{}, Zero{}) -> D.bconstant d True
          (Unit{}, Unit{}) -> D.bconstant d False
          _ -> do
@@ -113,9 +109,8 @@ matrix (w, h) d = Dictionary
     , weakly_greater = \ a b -> case (a,b) of
          _ | D.domain d /= D.Int -> 
              error "Matrix.weakly_greater"
-         (Zero{}, Zero{}) -> D.bconstant d True
+         (_, Zero{}) -> D.bconstant d True
          (Zero{}, Unit{}) -> D.bconstant d False
-         (Unit{}, Zero{}) -> D.bconstant d True
          (Unit{}, Unit{}) -> D.bconstant d True
          _ -> do
              ea <- expand d a ; eb <- expand d b
@@ -124,3 +119,7 @@ matrix (w, h) d = Dictionary
                  $ \ (x,y) -> D.ge d x y
              D.and d cs     
                 }
+
+bfoldM f [x] = return x
+bfoldM f (x:y:zs) = 
+    do xy <- f x y ; bfoldM f (zs ++ [xy])
