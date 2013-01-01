@@ -18,6 +18,8 @@ to = fst . dim ; from = snd . dim
 
 data Dictionary m num val =
      Dictionary { make :: (Int,Int) -> m (Matrix num)
+                , decode :: 
+                      Matrix num -> m (Matrix val)
                 , weakly_monotone :: 
                       Matrix num -> m B.Boolean
                 , strictly_monotone :: 
@@ -59,6 +61,14 @@ matrix  d = Dictionary
                forM [1..w] $ \ c ->
                     D.number d
          return $ Matrix { dim = (w,h), contents = cs} 
+    , decode = \ m -> case m of 
+         Zero {} -> return $ Zero (dim m) 
+         Unit {} -> return $ Unit (dim m) 
+         Matrix {} -> do
+             css <- forM (contents m) $ \ row ->
+                    forM row $ D.decode d
+             return $ Matrix { dim = dim m
+                             , contents = css }
     , positive = \ m -> case m of
         Zero {} -> D.bconstant d False
         Unit {} -> D.bconstant d True

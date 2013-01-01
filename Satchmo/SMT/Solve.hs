@@ -12,7 +12,7 @@ import Prelude hiding ( and, or, not )
 import qualified Prelude
 
 import Satchmo.SMT.Config
-import Satchmo.SMT.Dictionary
+import Satchmo.SMT.Dictionary hiding ( decode )
 import Satchmo.SMT.ToTerm
 
 import Satchmo.SAT.Mini (SAT)

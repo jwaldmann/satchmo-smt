@@ -11,6 +11,7 @@ data Dictionary m num val = Dictionary
     , domain :: Domain
     , number   :: m num
     , nconstant :: val -> m num
+    , decode :: num -> m val
     , add :: num -> num -> m num
     , times :: num -> num -> m num
     , positive :: num -> m B.Boolean

@@ -6,7 +6,9 @@ import Language.SMTLIB
 import Satchmo.SMT.Config
 
 import Satchmo.SMT.Dictionary
+import Satchmo.SMT.Exotic.Semiring.Integer 
 import qualified Satchmo.SAT.Mini
+import qualified Satchmo.Code
 import qualified Satchmo.Boolean as B
 
 import qualified Satchmo.Unary.Op.Fixed
@@ -63,10 +65,13 @@ binary_fixed bits = Dictionary
     { info = unwords [ "binary", "bits:", show bits, "(fixed)" ]
     , domain = Satchmo.SMT.Dictionary.Int
     , number = Bin.number bits
+    , decode = Satchmo.Code.decode
     , nconstant = Bin.constant
     , boolean = B.boolean
     , bconstant = B.constant
     , add = Satchmo.Binary.Op.Fixed.add
+    , times = Satchmo.Binary.Op.Fixed.times
+    , positive = \ n -> B.or $ Bin.bits n
     , gt = Bin.gt
     , ge = Bin.ge
     , neq = Bin.eq
