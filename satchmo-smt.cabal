@@ -35,6 +35,7 @@ Library
         -- Satchmo.SMT.Solve
         Satchmo.SMT.Dictionary
         Satchmo.SMT.Integer
+        Satchmo.SMT.Opt.Integer
         Satchmo.SMT.Matrix
         Satchmo.SMT.Linear
         Satchmo.SMT.Config

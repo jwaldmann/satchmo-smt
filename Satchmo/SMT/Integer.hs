@@ -19,6 +19,8 @@ import qualified Satchmo.Binary as Bin
 import qualified Satchmo.Binary.Op.Fixed  
 import qualified Satchmo.Binary.Op.Flexible
 
+import qualified Satchmo.SMT.Opt.Integer as O
+
 import Satchmo.SMT.ToTerm
 
 unary_fixed :: Int -> Unary_Addition 
@@ -69,7 +71,8 @@ binary_fixed bits = Dictionary
     , nconstant = Bin.constant
     , boolean = B.boolean
     , bconstant = B.constant
-    , add = Satchmo.Binary.Op.Fixed.add
+    , add = -- Satchmo.Binary.Op.Fixed.add
+        O.op2 ( O.primes $ O.fun2 (+) bits ) bits
     , times = Satchmo.Binary.Op.Fixed.times
     , positive = \ n -> B.or $ Bin.bits n
     , gt = Bin.gt
