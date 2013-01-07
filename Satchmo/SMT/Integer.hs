@@ -73,11 +73,11 @@ binary_fixed bits = Dictionary
     , boolean = B.boolean
     , bconstant = B.constant
     , add = 
-        Satchmo.Binary.Op.Fixed.add
-        -- OB.obi (+) bits 
+        -- Satchmo.Binary.Op.Fixed.add
+        OI.op2 ( OB.ifun2 (+) bits ) bits
     , times = 
-        Satchmo.Binary.Op.Fixed.times
-        -- OB.obi (*) bits 
+        -- Satchmo.Binary.Op.Fixed.times
+        OI.op2 ( OB.ifun2 (+) bits ) bits
     , positive = \ n -> B.or $ Bin.bits n
     , gt = Bin.gt
     , ge = Bin.ge
