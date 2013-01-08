@@ -65,11 +65,10 @@ unary_flexible bits a = Dictionary
     }
 
 binary_fixed bits =
-    if bits <= 3 
+    if bits <= 3
     then binary_fixed_opt   bits
-    else -- binary_fixed_plain bits
-        binary_fixed_double 
-            $ binary_fixed (div bits 2)
+    else binary_fixed_plain bits
+    -- binary_fixed_double $ binary_fixed (div bits 2)
 
 binary_fixed_opt bits = Dictionary
     { info = unwords [ "binary", "bits:", show bits, "(fixed)" ]
@@ -80,7 +79,9 @@ binary_fixed_opt bits = Dictionary
     , nconstant = Bin.constant
     , boolean = B.boolean
     , bconstant = B.constant
-    , add = OI.op2 ( OB.improve $ OB.fun2 (+) bits ) bits
+    , add = 
+       -- OI.op2 ( OB.improve $ OB.fun2 (+) bits ) bits
+       Satchmo.Binary.Op.Fixed.add
     , times = OI.op2 ( OB.improve $ OB.fun2 (*) bits ) bits
     , times_lo = OI.op2 
             ( OB.improve 
@@ -92,6 +93,7 @@ binary_fixed_opt bits = Dictionary
     , gt = OI.prop2 ( OB.improve $ OB.rel2 (>) bits) 
     , ge = OI.prop2 ( OB.improve $ OB.rel2 (>=) bits) 
     , neq = OI.prop2 ( OB.improve $ OB.rel2 (/=) bits) 
+    
     , and = B.and, or = B.or, not = B.not, beq = B.equals2, assert = B.assert
     }
 
