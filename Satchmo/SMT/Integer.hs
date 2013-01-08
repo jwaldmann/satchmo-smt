@@ -62,9 +62,12 @@ unary_flexible bits a = Dictionary
     , and = B.and, or = B.or, not = B.not, beq = B.equals2, assert = B.assert
     }
 
+binary_fixed bits =
+    if bits <= 3 
+    then binary_fixed_opt   bits
+    else binary_fixed_plain bits
 
-binary_fixed :: Int -> Dictionary Satchmo.SAT.Mini.SAT Bin.Number Integer
-binary_fixed bits = Dictionary
+binary_fixed_opt bits = Dictionary
     { info = unwords [ "binary", "bits:", show bits, "(fixed)" ]
     , domain = Satchmo.SMT.Dictionary.Int
     , number = Bin.number bits
@@ -72,12 +75,27 @@ binary_fixed bits = Dictionary
     , nconstant = Bin.constant
     , boolean = B.boolean
     , bconstant = B.constant
-    , add = 
-        -- Satchmo.Binary.Op.Fixed.add
-        OI.op2 ( OB.improve $ OB.fun2 (+) bits ) bits
-    , times = 
-        -- Satchmo.Binary.Op.Fixed.times
-        OI.op2 ( OB.improve $ OB.fun2 (+) bits ) bits
+    , add = OI.op2 ( OB.improve $ OB.fun2 (+) bits ) bits
+    , times = OI.op2 ( OB.improve $ OB.fun2 (*) bits ) bits
+    , positive = \ n -> B.or $ Bin.bits n
+    , gt = OI.prop2 ( OB.improve $ OB.rel2 (>) bits) 
+    , ge = OI.prop2 ( OB.improve $ OB.rel2 (>=) bits) 
+    , neq = OI.prop2 ( OB.improve $ OB.rel2 (/=) bits) 
+    , and = B.and, or = B.or, not = B.not, beq = B.equals2, assert = B.assert
+    }
+
+binary_fixed_plain :: Int 
+  -> Dictionary Satchmo.SAT.Mini.SAT Bin.Number Integer
+binary_fixed_plain bits = Dictionary
+    { info = unwords [ "binary", "bits:", show bits, "(fixed)" ]
+    , domain = Satchmo.SMT.Dictionary.Int
+    , number = Bin.number bits
+    , decode = Satchmo.Code.decode
+    , nconstant = Bin.constant
+    , boolean = B.boolean
+    , bconstant = B.constant
+    , add = Satchmo.Binary.Op.Fixed.add
+    , times = Satchmo.Binary.Op.Fixed.times
     , positive = \ n -> B.or $ Bin.bits n
     , gt = Bin.gt
     , ge = Bin.ge
