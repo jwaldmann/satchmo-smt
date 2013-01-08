@@ -1,7 +1,5 @@
 module Satchmo.SMT.Opt.Integer where
 
-
-
 import qualified Satchmo.Binary as Bin
 import qualified Satchmo.Boolean as B
 

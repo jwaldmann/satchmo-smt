@@ -14,6 +14,8 @@ data Matrix a
               , contents :: [[a]] }
     deriving Show
 
+
+
 to = fst . dim ; from = snd . dim
 
 data Dictionary m num val =
@@ -76,7 +78,8 @@ matrix  d = Dictionary
         Matrix {} -> D.positive d
            $ head $ head $ contents m
     , add = \ a b -> case (a,b) of
-        _ | dim a /= dim b -> error "Matrix.add"
+        _ | dim a /= dim b -> 
+              error $ "Matrix.add " ++ show (dim a,dim b)
         ( Zero {} , _ ) -> return b
         ( _ , Zero {} ) -> return a       
         _ -> do
@@ -87,11 +90,16 @@ matrix  d = Dictionary
             return $ Matrix { dim = dim a
                             , contents = css }
     , times = \ a b -> case (a,b) of
-        _ | from a /= to b -> error "Matrix.times"
-        (Zero{}, _) -> return a
-        (_, Zero{}) -> return b
-        (Unit{}, _) -> return b
-        (_, Unit{}) -> return a
+        _ | from a /= to b -> 
+              error $ "Matrix.times " ++ show (dim a,dim b)
+        (Zero{}, _) -> 
+                 return $ a { dim = (to a, from b) }
+        (_, Zero{}) -> 
+                 return $ b { dim = (to a, from b) }
+        (Unit{}, _) -> 
+                 return $ b { dim = (to a, from b) }
+        (_, Unit{}) -> 
+                 return $ a { dim = (to a, from b) }
         (Matrix{},Matrix{}) -> do
             let 
                 dot xs ys = do
