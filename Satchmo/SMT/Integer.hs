@@ -82,6 +82,12 @@ binary_fixed_opt bits = Dictionary
     , bconstant = B.constant
     , add = OI.op2 ( OB.improve $ OB.fun2 (+) bits ) bits
     , times = OI.op2 ( OB.improve $ OB.fun2 (*) bits ) bits
+    , times_lo = OI.op2 
+            ( OB.improve 
+            $ OB.fun2 (\x y -> mod(x*y) (2^bits)) bits ) bits
+    , times_hi = OI.op2 
+            ( OB.improve 
+            $ OB.fun2 (\x y -> div(x*y) (2^bits)) bits ) bits
     , positive = \ n -> B.or $ Bin.bits n
     , gt = OI.prop2 ( OB.improve $ OB.rel2 (>) bits) 
     , ge = OI.prop2 ( OB.improve $ OB.rel2 (>=) bits) 
@@ -117,12 +123,6 @@ binary_fixed_double d =
                 in  (Bin.make lo, Bin.make hi)
         join x y = 
                 Bin.make $ Bin.bits x ++ Bin.bits y
-        times_lo = OI.op2 
-            ( OB.improve 
-            $ OB.fun2 (\x y -> mod(x*y) (2^h)) h ) h
-        times_hi = OI.op2 
-            ( OB.improve 
-            $ OB.fun2 (\x y -> div(x*y) (2^h)) h ) h
     in  Dictionary
     { info = unwords [ "binary", "bits:", show bits, "(fixed)" ]
     , domain = Satchmo.SMT.Dictionary.Int
@@ -144,8 +144,8 @@ binary_fixed_double d =
     , times = \ x y -> do
          let (xl, xh) = split x
              (yl, yh) = split y
-         l <- times_lo xl yl
-         m1 <- times_hi xl yl
+         l <- times_lo d xl yl
+         m1 <- times_hi d xl yl
          m2 <- times d xl yh
          m3 <- times d xh yl
          m23 <- add d m2 m3

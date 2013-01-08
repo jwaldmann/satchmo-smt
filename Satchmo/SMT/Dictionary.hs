@@ -15,6 +15,8 @@ data Dictionary m num val = Dictionary
     , decode :: num -> m val
     , add :: num -> num -> m num
     , times :: num -> num -> m num
+    , times_lo :: num -> num -> m num
+    , times_hi :: num -> num -> m num
     , positive :: num -> m B.Boolean
     , gt :: num -> num -> m B.Boolean
     , ge :: num -> num -> m B.Boolean
