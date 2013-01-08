@@ -10,6 +10,7 @@ data Dictionary m num val = Dictionary
     { info :: String
     , domain :: Domain
     , number   :: m num
+    , nbits :: Int
     , nconstant :: val -> m num
     , decode :: num -> m val
     , add :: num -> num -> m num
