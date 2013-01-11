@@ -19,8 +19,8 @@ import qualified Satchmo.Binary as Bin
 import qualified Satchmo.Binary.Op.Fixed  
 import qualified Satchmo.Binary.Op.Flexible
 
--- import qualified Satchmo.SMT.Opt.Integer as OI
--- import qualified Satchmo.SMT.Opt.Base as OB
+import qualified Satchmo.SMT.Opt.Integer as OI
+import qualified Satchmo.SMT.Opt.Base as OB
 
 import Satchmo.SMT.ToTerm
 
@@ -65,13 +65,10 @@ unary_flexible bits a = Dictionary
     }
 
 binary_fixed bits =
-    -- if bits <= 3
-    -- then binary_fixed_opt   bits
-    -- else 
-       binary_fixed_plain bits
+    if bits <= 3
+    then binary_fixed_opt   bits
+    else binary_fixed_plain bits
     -- binary_fixed_double $ binary_fixed (div bits 2)
-
-{-
 
 binary_fixed_opt bits = Dictionary
     { info = unwords [ "binary", "bits:", show bits, "(fixed)" ]
@@ -99,8 +96,6 @@ binary_fixed_opt bits = Dictionary
     
     , and = B.and, or = B.or, not = B.not, beq = B.equals2, assert = B.assert
     }
-
--}
 
 binary_fixed_plain :: Int 
   -> Dictionary Satchmo.SAT.Mini.SAT Bin.Number Integer
