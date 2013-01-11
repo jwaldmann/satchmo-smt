@@ -1,7 +1,7 @@
 module Satchmo.SMT.Matrix where
 
 import qualified Satchmo.SMT.Dictionary as D
-import qualified Satchmo.Boolean as B
+-- import qualified Satchmo.Boolean as B
 import qualified Satchmo.SMT.Exotic.Semiring.Class as S
 
 import Control.Monad ( forM )
@@ -18,26 +18,27 @@ data Matrix a
 
 to = fst . dim ; from = snd . dim
 
-data Dictionary m num val =
+data Dictionary m num val bool =
      Dictionary { make :: (Int,Int) -> m (Matrix num)
                 , decode :: 
                       Matrix num -> m (Matrix val)
                 , weakly_monotone :: 
-                      Matrix num -> m B.Boolean
+                      Matrix num -> m bool
                 , strictly_monotone :: 
-                      Matrix num -> m B.Boolean
+                      Matrix num -> m bool
                 , positive :: 
-                      Matrix num -> m B.Boolean
+                      Matrix num -> m bool
                 , add :: Matrix num -> Matrix num
                        -> m (Matrix num)
                 , times :: Matrix num -> Matrix num
                        -> m (Matrix num)
                 , strictly_greater :: 
                           Matrix num -> Matrix num
-                       -> m B.Boolean
+                       -> m bool
                 , weakly_greater :: 
                           Matrix num -> Matrix num
-                       -> m B.Boolean
+                       -> m bool
+                , and :: [ bool ] -> m bool
                 }
 
 expand d a = case a of
@@ -55,8 +56,8 @@ expand d a = case a of
     Matrix {} -> return a
        
 matrix :: (Monad m, S.Semiring val)
-       => D.Dictionary m num val
-       -> Dictionary m num val
+       => D.Dictionary m num val bool
+       -> Dictionary m num val bool
 matrix  d = Dictionary
     { make = \ (to, from) -> do
          cs <- forM [1..to] $ \ r ->

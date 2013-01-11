@@ -1,12 +1,11 @@
 module Satchmo.SMT.Dictionary where
 
 import Language.SMTLIB
-import qualified Satchmo.Boolean as B
 
 data Domain = Int | Arctic | Tropical | Fuzzy  
     deriving ( Show, Eq )
 
-data Dictionary m num val = Dictionary
+data Dictionary m num val bool = Dictionary
     { info :: String
     , domain :: Domain
     , number   :: m num
@@ -17,15 +16,15 @@ data Dictionary m num val = Dictionary
     , times :: num -> num -> m num
     , times_lo :: num -> num -> m num
     , times_hi :: num -> num -> m num
-    , positive :: num -> m B.Boolean
-    , gt :: num -> num -> m B.Boolean
-    , ge :: num -> num -> m B.Boolean
-    , neq :: num -> num -> m B.Boolean -- ^ numeric equal (not: not equal)
-    , boolean :: m B.Boolean
-    , bconstant :: Bool -> m B.Boolean
-    , and :: [ B.Boolean ] -> m B.Boolean
-    , or :: [ B.Boolean ] -> m B.Boolean
-    , not :: B.Boolean -> B.Boolean
-    , beq :: B.Boolean -> B.Boolean -> m B.Boolean
-    , assert :: [ B.Boolean ] -> m ()
+    , positive :: num -> m bool
+    , gt :: num -> num -> m bool
+    , ge :: num -> num -> m bool
+    , neq :: num -> num -> m bool -- ^ numeric equal (not: not equal)
+    , boolean :: m bool
+    , bconstant :: Bool -> m bool
+    , and :: [ bool ] -> m bool
+    , or :: [ bool ] -> m bool
+    , not :: bool -> bool
+    , beq :: bool -> bool -> m bool
+    , assert :: [ bool ] -> m ()
     }

@@ -27,7 +27,7 @@ import Satchmo.SMT.ToTerm
 import Control.Monad ( forM )
 
 unary_fixed :: Int -> Unary_Addition 
-            -> Dictionary Satchmo.SAT.Mini.SAT Un.Number Integer
+            -> Dictionary Satchmo.SAT.Mini.SAT Un.Number Integer B.Boolean
 unary_fixed bits a = Dictionary
     { info = unwords [ "unary", "bits:", show bits, "(fixed)", "addition:", show a ]
     , domain = Satchmo.SMT.Dictionary.Int
@@ -46,7 +46,7 @@ unary_fixed bits a = Dictionary
     }
 
 unary_flexible :: Int -> Unary_Addition
-               -> Dictionary Satchmo.SAT.Mini.SAT Un.Number Integer
+               -> Dictionary Satchmo.SAT.Mini.SAT Un.Number Integer  B.Boolean
 unary_flexible bits a = Dictionary
     { info = unwords [ "unary", "bits:", show bits, "(flexible)", "addition:", show a ]
     , domain = Satchmo.SMT.Dictionary.Int
@@ -98,7 +98,7 @@ binary_fixed_opt bits = Dictionary
     }
 
 binary_fixed_plain :: Int 
-  -> Dictionary Satchmo.SAT.Mini.SAT Bin.Number Integer
+  -> Dictionary Satchmo.SAT.Mini.SAT Bin.Number Integer B.Boolean
 binary_fixed_plain bits = Dictionary
     { info = unwords [ "binary", "bits:", show bits, "(fixed)" ]
     , domain = Satchmo.SMT.Dictionary.Int
@@ -167,7 +167,7 @@ binary_fixed_double d =
     }
 
 
-binary_flexible :: Int -> Dictionary Satchmo.SAT.Mini.SAT Bin.Number Integer
+binary_flexible :: Int -> Dictionary Satchmo.SAT.Mini.SAT Bin.Number Integer B.Boolean
 binary_flexible bits = Dictionary
     { info = unwords [ "binary", "bits:", show bits, "(flexbible)" ]
     , domain = Satchmo.SMT.Dictionary.Int

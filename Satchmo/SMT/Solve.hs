@@ -44,12 +44,12 @@ import Control.Concurrent
 data Value n = Value_Number n
          | Value_Bool Bool
 
-data Code n = Code_Number n
-          | Code_Bool B.Boolean
+data Code n b = Code_Number n
+          | Code_Bool b
 
 
-instance (Decode m B.Boolean Bool, Decode m n v, Functor m)
-         => Decode m (Code n ) (Value v)  where
+instance (Decode m b Bool, Decode m n v, Functor m)
+         => Decode m (Code n b ) (Value v)  where
     decode c = case c of
         Code_Number i -> Value_Number <$> decode i
         Code_Bool b -> Value_Bool <$> decode b
@@ -74,7 +74,7 @@ execute0 conf s = do
         forkIO $ killThread pid
         return Nothing
 
-data D = forall n . Decode SAT n Integer => D (Dictionary SAT n Integer)
+data D = forall n . Decode SAT n Integer => D (Dictionary SAT n Integer B.Boolean)
 
 solve_script conf s = do
     let b = bits conf ; a = unary_addition conf
@@ -88,18 +88,18 @@ solve_script conf s = do
             hPutStrLn stderr $ info d
             Satchmo.SAT.Mini.solve $ evalStateT (script d s) M.empty
 
-type Solver m n  = StateT (M.Map Symbol ( Code n )) m 
+type Solver m n b = StateT (M.Map Symbol ( Code n b )) m 
 
-type SolverC m n v = 
+type SolverC m n v b = 
     ( Functor m, Monad m
-    , Decode m n v, Decode m B.Boolean Bool
+    , Decode m n v, Decode m b Bool
     , Num v , ToTerm v )
 
 
-script :: ( SolverC m n v )
-       => Dictionary m n v
-       -> Script -> Solver m n (m [( Term, Term)] ) 
-script (dict :: Dictionary m n v) (Script cs) =  do
+script :: ( SolverC m n v b )
+       => Dictionary m n v b
+       -> Script -> Solver m n b (m [( Term, Term)] ) 
+script (dict :: Dictionary m n v b) (Script cs) =  do
     forM_ cs $ command dict
     m <- get
     return $ do
@@ -119,9 +119,9 @@ bool2term b =
         False -> "false" ; True -> "true"
 
 
-command :: SolverC m n v
-       => Dictionary m n v 
-       -> Command -> Solver m n ()
+command :: SolverC m n v b
+       => Dictionary m n v b
+       -> Command -> Solver m n b ()
 command dict c = case c of
     Set_option ( Produce_models True ) -> return ()
 
@@ -169,10 +169,10 @@ command dict c = case c of
 
     _ -> error $ "cannot handle command " ++ show c    
 
-term :: SolverC m n v
-       => Dictionary m n v
+term :: SolverC m n v b
+       => Dictionary m n v b
        -> Term 
-       -> Solver m n ( Code n )
+       -> Solver m n b ( Code n b )
 term dict f = case f of
     Term_attributes f [ Attribute_s_expr ":named" _ ] -> do
         term dict f
