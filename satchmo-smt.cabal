@@ -37,7 +37,7 @@ Library
         Satchmo.SMT.Dictionary
         Satchmo.SMT.Integer
         Satchmo.SMT.Opt.Integer
-        Satchmo.SMT.Opt.Base
+        -- Satchmo.SMT.Opt.Base
         Satchmo.SMT.Matrix
         Satchmo.SMT.Linear
         Satchmo.SMT.Config
