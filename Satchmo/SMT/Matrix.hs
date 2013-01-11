@@ -138,6 +138,7 @@ matrix  d = Dictionary
                               (concat $ contents eb))
                  $ \ (x,y) -> D.ge d x y
              D.and d cs     
+    , Satchmo.SMT.Matrix.and = D.and d
                 }
 
 bfoldM f [x] = return x
