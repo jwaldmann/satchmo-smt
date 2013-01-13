@@ -35,6 +35,8 @@ data Dictionary m num val bool =
                       -> Linear num -> m bool 
                 , strictly_greater :: Linear num 
                       -> Linear num -> m bool 
+                , and :: [ bool ] -> m bool
+                , assert :: [ bool ] -> m ()
                 } 
 
 linear :: Monad m
@@ -84,5 +86,9 @@ linear d = Dictionary
         ls <- forM (zip (lin f) (lin g)) $ \ (a,b) ->
              M.weakly_greater d a b
         M.and d $ a : ls
+
+    , Satchmo.SMT.Linear.and = M.and d
+    , Satchmo.SMT.Linear.assert = M.assert d
+
     }
  

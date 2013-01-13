@@ -39,6 +39,7 @@ data Dictionary m num val bool =
                           Matrix num -> Matrix num
                        -> m bool
                 , and :: [ bool ] -> m bool
+                , assert :: [ bool ] -> m ()
                 }
 
 expand d a = case a of
@@ -139,6 +140,7 @@ matrix  d = Dictionary
                  $ \ (x,y) -> D.ge d x y
              D.and d cs     
     , Satchmo.SMT.Matrix.and = D.and d
+    , Satchmo.SMT.Matrix.assert = D.assert d
                 }
 
 bfoldM f [x] = return x
