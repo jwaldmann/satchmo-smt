@@ -40,6 +40,7 @@ data Dictionary m num val bool =
                        -> m bool
                 , and :: [ bool ] -> m bool
                 , assert :: [ bool ] -> m ()
+                , bconstant :: Bool -> m bool
                 }
 
 expand d a = case a of
@@ -141,6 +142,7 @@ matrix  d = Dictionary
              D.and d cs     
     , Satchmo.SMT.Matrix.and = D.and d
     , Satchmo.SMT.Matrix.assert = D.assert d
+    , Satchmo.SMT.Matrix.bconstant = D.bconstant d
                 }
 
 bfoldM f [x] = return x

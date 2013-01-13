@@ -37,6 +37,7 @@ data Dictionary m num val bool =
                       -> Linear num -> m bool 
                 , and :: [ bool ] -> m bool
                 , assert :: [ bool ] -> m ()
+                , bconstant :: Bool -> m bool
                 } 
 
 linear :: Monad m
@@ -89,6 +90,7 @@ linear d = Dictionary
 
     , Satchmo.SMT.Linear.and = M.and d
     , Satchmo.SMT.Linear.assert = M.assert d
+    , Satchmo.SMT.Linear.bconstant = M.bconstant d
 
     }
  
