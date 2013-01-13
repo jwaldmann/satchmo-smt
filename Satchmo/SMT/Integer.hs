@@ -1,6 +1,9 @@
 module Satchmo.SMT.Integer where
 
 import Prelude hiding ( not, and, or )
+import qualified Prelude
+import Control.Monad.Error ( throwError )
+
 import Language.SMTLIB
 
 import Satchmo.SMT.Config
@@ -25,6 +28,24 @@ import qualified Satchmo.SMT.Opt.Base as OB
 import Satchmo.SMT.ToTerm
 
 import Control.Monad ( forM )
+
+direct :: Dictionary (Either String) Integer Integer Bool
+direct = Dictionary 
+    { info = unwords [ "binary (direct)" ]
+    , domain = Satchmo.SMT.Dictionary.Int
+    , nconstant = \ n -> return n
+    , bconstant = \ b -> return b
+    , add   = \ x y -> return $ x + y
+    , times = \ x y -> return $ x * y
+    , positive = \ x -> return $ x > 0 
+    , gt = \ x y -> return $ x > y
+    , ge = \ x y -> return $ x >= y 
+    , and = \ xs -> return $ Prelude.and xs
+    , or  = \ xs -> return $ Prelude.or xs
+    , not = Prelude.not 
+    , assert = \ bs -> if Prelude.or bs then return () 
+                      else throwError "Satchmo.SMT.Integer.assert"
+    }
 
 unary_fixed :: Int -> Unary_Addition 
             -> Dictionary Satchmo.SAT.Mini.SAT Un.Number Integer B.Boolean
