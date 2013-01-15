@@ -9,7 +9,7 @@ import Language.SMTLIB
 import Satchmo.SMT.Config
 
 import Satchmo.SMT.Dictionary
-import Satchmo.SMT.Exotic.Semiring.Integer 
+-- import Satchmo.SMT.Exotic.Semiring.Integer 
 import qualified Satchmo.SAT.Mini
 import qualified Satchmo.Code
 import qualified Satchmo.Boolean as B
@@ -104,12 +104,7 @@ binary_fixed_opt bits = Dictionary
        -- OI.op2 ( OB.improve $ OB.fun2 (+) bits ) bits
        Satchmo.Binary.Op.Fixed.add
     , times = OI.op2 ( OB.improve $ OB.fun2 (*) bits ) bits
-    , times_lo = OI.op2 
-            ( OB.improve 
-            $ OB.fun2 (\x y -> mod(x*y) (2^bits)) bits ) bits
-    , times_hi = OI.op2 
-            ( OB.improve 
-            $ OB.fun2 (\x y -> div(x*y) (2^bits)) bits ) bits
+
     , positive = \ n -> B.or $ Bin.bits n
     , gt = OI.prop2 ( OB.improve $ OB.rel2 (>) bits) 
     , ge = OI.prop2 ( OB.improve $ OB.rel2 (>=) bits) 
@@ -137,56 +132,6 @@ binary_fixed_plain bits = Dictionary
     , neq = Bin.eq
     , and = B.and, or = B.or, not = B.not, beq = B.equals2, assert = B.assert
     }
-
-
-binary_fixed_double d = 
-    let h = nbits d ; bits = 2 * h
-        split x = 
-                let (lo,hi) = splitAt h $ Bin.bits x
-                in  (Bin.make lo, Bin.make hi)
-        join x y = 
-                Bin.make $ Bin.bits x ++ Bin.bits y
-    in  Dictionary
-    { info = unwords [ "binary", "bits:", show bits, "(fixed)" ]
-    , domain = Satchmo.SMT.Dictionary.Int
-    , number = Bin.number bits
-    , nbits = bits
-    , decode = Satchmo.Code.decode
-    , nconstant = Bin.constant
-    , boolean = B.boolean
-    , bconstant = B.constant
-
-    , add = \ x y -> do
-         let (xl, xh) = split x
-             (yl, yh) = split y
-         -- FIXME: allow carry in the middle:
-         l <- add d xl yl
-         h <- add d xh yh
-         return $ join l h
-
-    , times = \ x y -> do
-         let (xl, xh) = split x
-             (yl, yh) = split y
-         l <- times_lo d xl yl
-         m1 <- times_hi d xl yl
-         m2 <- times d xl yh
-         m3 <- times d xh yl
-         m23 <- add d m2 m3
-         m123 <- add d m1 m23
-         h <- times d xh yh
-         forM ( Bin.bits h) $ \ b -> 
-              B.assert [ B.not b ]
-         return $ join l m123
-
-    , positive = \ n -> B.or $ Bin.bits n
-    , gt = Bin.gt
-    , ge = Bin.ge
-    , neq = Bin.eq
-
-    , and = B.and, or = B.or, not = B.not
-    , beq = B.equals2, assert = B.assert
-    }
-
 
 binary_flexible :: Int -> Dictionary Satchmo.SAT.Mini.SAT Bin.Number Integer B.Boolean
 binary_flexible bits = Dictionary
