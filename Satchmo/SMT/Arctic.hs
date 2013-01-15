@@ -61,7 +61,8 @@ unary_fixed bits = let d = C.dict bits in
         A.Finite c -> do
             let fs = map ( c >= ) 
                      [0 .. fromIntegral bits] 
-            when ( last fs) $ error "Arctic.nconstant: range"
+            when ( Prelude.not (head fs) || last fs) 
+                 $ error "Arctic.nconstant: range"
             bs <- forM (init fs) B.constant
             C.make $ N.make $ bs
     , decode = Satchmo.Code.decode

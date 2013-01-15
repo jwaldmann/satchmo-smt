@@ -81,8 +81,10 @@ matrix  d = Dictionary
     , positive = \ m -> case m of
         Zero {} -> D.bconstant d False
         Unit {} -> D.bconstant d True
-        Matrix {} -> D.positive d
-           $ head $ head $ contents m
+        Matrix {} -> 
+          if to m > 0 && from m > 0 
+          then D.positive d $ head $ head $ contents m
+          else error $ "Matrix.positive " ++ show (dim m)
     , add = \ a b -> case (a,b) of
         _ | dim a /= dim b -> 
               error $ "Matrix.add " ++ show (dim a,dim b)
