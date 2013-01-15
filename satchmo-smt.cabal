@@ -1,5 +1,5 @@
 Name:           satchmo-smt
-Version:        0.2
+Version:        0.3
 
 License:        GPL
 License-file:	gpl-2.0.txt
@@ -25,17 +25,18 @@ Library
         -- Satchmo.SMT.Exotic.Fuzzy
         -- Satchmo.SMT.Exotic.Arctic
         -- Satchmo.SMT.Exotic.Generate
-        Satchmo.SMT.Exotic.Semiring
+        -- Satchmo.SMT.Exotic.Semiring
         -- Satchmo.SMT.Exotic.Semiring.Rational
-        Satchmo.SMT.Exotic.Semiring.Class
+        -- Satchmo.SMT.Exotic.Semiring.Class
         -- Satchmo.SMT.Exotic.Semiring.Tropical
         -- Satchmo.SMT.Exotic.Semiring.Fuzzy
-        Satchmo.SMT.Exotic.Semiring.Integer
+        -- Satchmo.SMT.Exotic.Semiring.Integer
         -- Satchmo.SMT.Exotic.Semiring.Arctic
         -- Satchmo.SMT.Exotic.Transform
         -- Satchmo.SMT.Solve
         Satchmo.SMT.Dictionary
         Satchmo.SMT.Integer
+        Satchmo.SMT.Arctic
         Satchmo.SMT.Opt.Integer
         Satchmo.SMT.Opt.Base
         Satchmo.SMT.Matrix

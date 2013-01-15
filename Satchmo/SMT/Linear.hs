@@ -1,5 +1,6 @@
 module Satchmo.SMT.Linear where
 
+import qualified Satchmo.SMT.Dictionary as D
 import qualified Satchmo.SMT.Matrix as M
 -- import qualified Satchmo.Boolean as B
 import qualified Satchmo.SMT.Exotic.Semiring.Class as S
@@ -18,7 +19,8 @@ data Linear a =
 to = fst . dim ; from = snd . dim
 
 data Dictionary m num val bool =
-     Dictionary { make :: Int -> (Int,Int) 
+     Dictionary { domain :: D.Domain
+                , make :: Int -> (Int,Int) 
                       -> m (Linear num)
                 , decode :: 
                     Linear num -> m (Linear val) 
@@ -44,7 +46,8 @@ linear :: Monad m
        => M.Dictionary m num val bool
        -> Dictionary m (M.Matrix num) (M.Matrix val) bool
 linear d = Dictionary
-    { make = \ ar (to, from) -> do
+    { domain = M.domain d
+    , make = \ ar (to, from) -> do
         ms <- forM [ 1 .. ar ] $ \ i -> 
             M.make d (to,from)
         a <- M.make d (to, 1)
@@ -68,21 +71,34 @@ linear d = Dictionary
                { dim = (to f, -1)
                , abs = a, lin = ls
                }   
-    , positive = \ f -> do
-        ms <- forM ( lin f ) $ M.positive d
-        M.and d ms
+    , positive = \ f -> case M.domain d of
+        D.Int -> do
+            ms <- forM ( lin f ) $ M.positive d
+            M.and d ms
+        D.Arctic -> do
+            a <- M.positive d $ abs f
+            ms <- forM ( lin f ) $ M.positive d
+            M.or d $ a : ms
+{-
     , strictly_monotone = \ f -> do
         ms <- forM ( lin f ) $ M.strictly_monotone d
         M.and d ms
     , weakly_monotone = \ f -> do
         ms <- forM ( lin f ) $ M.weakly_monotone d
         M.and d ms
-    , strictly_greater = \ f g -> do
-        a <- M.strictly_greater d (abs f) (abs g)
-        ls <- forM (zip (lin f) (lin g)) $ \ (a,b) ->
+-}
+    , strictly_greater = \ f g -> case M.domain d of
+        D.Int -> do
+          a <- M.strictly_greater d (abs f) (abs g)
+          ls <- forM (zip (lin f) (lin g)) $ \ (a,b) ->
              M.weakly_greater d a b
-        M.and d $ a : ls
-    , weakly_greater = \ f g -> do
+          M.and d $ a : ls
+        D.Arctic -> do
+          a <- M.strictly_greater d (abs f) (abs g)
+          ls <- forM (zip (lin f) (lin g)) $ \ (a,b) ->
+             M.strictly_greater d a b
+          M.and d $ a : ls
+      , weakly_greater = \ f g -> do
         a <- M.weakly_greater d (abs f) (abs g)
         ls <- forM (zip (lin f) (lin g)) $ \ (a,b) ->
              M.weakly_greater d a b

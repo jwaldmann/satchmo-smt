@@ -19,7 +19,8 @@ data Matrix a
 to = fst . dim ; from = snd . dim
 
 data Dictionary m num val bool =
-     Dictionary { make :: (Int,Int) -> m (Matrix num)
+     Dictionary { domain :: D.Domain
+                , make :: (Int,Int) -> m (Matrix num)
                 , decode :: 
                       Matrix num -> m (Matrix val)
                 , weakly_monotone :: 
@@ -39,6 +40,7 @@ data Dictionary m num val bool =
                           Matrix num -> Matrix num
                        -> m bool
                 , and :: [ bool ] -> m bool
+                , or  :: [ bool ] -> m bool
                 , assert :: [ bool ] -> m ()
                 , bconstant :: Bool -> m bool
                 }
@@ -61,7 +63,8 @@ matrix :: (Monad m, S.Semiring val)
        => D.Dictionary m num val bool
        -> Dictionary m num val bool
 matrix  d = Dictionary
-    { make = \ (to, from) -> do
+    { domain = D.domain d
+    , make = \ (to, from) -> do
          cs <- forM [1..to] $ \ r ->
                forM [1..from] $ \ c ->
                     D.number d
@@ -114,9 +117,8 @@ matrix  d = Dictionary
                dot row col
             return $ Matrix { dim = (to a,from b)
                             , contents = css }
-    , strictly_greater = \ a b -> case (a,b) of
-         _ | D.domain d /= D.Int -> 
-             error "Matrix.strictly_greater"
+    , strictly_greater = \ a b -> case D.domain d of
+       D.Int -> case (a,b) of
          (Zero{}, _) -> D.bconstant d False
          (Unit{}, Zero{}) -> D.bconstant d True
          (Unit{}, Unit{}) -> D.bconstant d False
@@ -128,9 +130,20 @@ matrix  d = Dictionary
              c <- D.gt d x y
              cs <- forM rest $ \ (x,y) -> D.ge d x y
              D.and d $ c : cs     
-    , weakly_greater = \ a b -> case (a,b) of
-         _ | D.domain d /= D.Int -> 
-             error "Matrix.weakly_greater"
+       D.Arctic -> case (a,b) of
+         (_, Zero{}) -> D.bconstant d True
+         (Unit{}, Zero{}) -> D.bconstant d True
+         (Unit{}, Unit{}) -> D.bconstant d False
+         _ -> do
+             ea <- expand d a ; eb <- expand d b
+             let xys =  
+                    zip (concat $ contents ea) 
+                        (concat $ contents eb)
+             cs <- forM xys $ \ (x,y) -> D.gt d x y
+             D.and d cs
+    , weakly_greater = \ a b -> case D.domain d of
+       _ | D.domain d `elem` 
+             [D.Int, D.Arctic] -> case (a,b) of
          (_, Zero{}) -> D.bconstant d True
          (Zero{}, Unit{}) -> D.bconstant d False
          (Unit{}, Unit{}) -> D.bconstant d True
@@ -141,6 +154,7 @@ matrix  d = Dictionary
                  $ \ (x,y) -> D.ge d x y
              D.and d cs     
     , Satchmo.SMT.Matrix.and = D.and d
+    , Satchmo.SMT.Matrix.or  = D.or  d
     , Satchmo.SMT.Matrix.assert = D.assert d
     , Satchmo.SMT.Matrix.bconstant = D.bconstant d
                 }
