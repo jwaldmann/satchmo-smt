@@ -68,7 +68,9 @@ linear d = Dictionary
                    $ \ (l,m) -> M.times d l m
                 M.bfoldM (M.add d) out
         return $ Linear 
-               { dim = (to f, -1)
+               { dim = (to f, case gs of
+                   [] -> error "missing .from in substitute"
+                   g : _ -> from g )
                , abs = a, lin = ls
                }   
     , positive = \ f -> case M.domain d of
@@ -99,10 +101,9 @@ linear d = Dictionary
              M.strictly_greater d a b
           M.and d $ a : ls
       , weakly_greater = \ f g -> do
-        a <- M.weakly_greater d (abs f) (abs g)
-        ls <- forM (zip (lin f) (lin g)) $ \ (a,b) ->
-             M.weakly_greater d a b
-        M.and d $ a : ls
+        ls <- forM (zip (abs f : lin f)(abs g : lin g))
+            $ \ (a,b) -> M.weakly_greater d a b
+        M.and d $ ls
 
     , Satchmo.SMT.Linear.and = M.and d
     , Satchmo.SMT.Linear.assert = M.assert d

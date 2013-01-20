@@ -43,8 +43,9 @@ direct = Dictionary
     , and = \ xs -> return $ Prelude.and xs
     , or  = \ xs -> return $ Prelude.or xs
     , not = Prelude.not 
-    , assert = \ bs -> if Prelude.or bs then return () 
-                      else throwError "Satchmo.SMT.Integer.assert"
+    , assert = \ bs -> 
+          if Prelude.or bs then return () 
+          else throwError "Satchmo.SMT.Integer.assert"
     }
 
 unary_fixed :: Int -> Unary_Addition 
@@ -97,20 +98,34 @@ binary_fixed_opt bits = Dictionary
     , number = Bin.number bits
     , nbits = bits
     , decode = Satchmo.Code.decode
-    , nconstant = Bin.constant
+    , nconstant = \ n -> do
+          let digitsRest n 0 = ( [], n )
+              digitsRest n b = 
+                  let (d,m) = divMod n 2
+                      (ds,r) = digitsRest d (b-1)
+                  in  (toEnum m : ds, r)
+          let (ds, 0) = 
+                  digitsRest (fromIntegral n) bits
+          fmap Bin.make $ forM ds B.constant
     , boolean = B.boolean
     , bconstant = B.constant
     , add = 
        -- OI.op2 ( OB.improve $ OB.fun2 (+) bits ) bits
        Satchmo.Binary.Op.Fixed.add
-    , times = OI.op2 ( OB.improve $ OB.fun2 (*) bits ) bits
-
+    , times = 
+       OI.op2 ( OB.improve $ OB.fun2 (*) bits ) bits
+       -- Satchmo.Binary.Op.Fixed.times
     , positive = \ n -> B.or $ Bin.bits n
-    , gt = OI.prop2 ( OB.improve $ OB.rel2 (>) bits) 
-    , ge = OI.prop2 ( OB.improve $ OB.rel2 (>=) bits) 
-    , neq = OI.prop2 ( OB.improve $ OB.rel2 (/=) bits) 
+    , gt = 
+       OI.prop2 ( OB.improve $ OB.rel2 (>) bits) 
+       -- Bin.gt
+    , ge = 
+       OI.prop2 ( OB.improve $ OB.rel2 (>=) bits) 
+       -- Bin.ge
+    -- , neq = OI.prop2 ( OB.improve $ OB.rel2 (/=) bits) 
     
-    , and = B.and, or = B.or, not = B.not, beq = B.equals2, assert = B.assert
+    , and = B.and, or = B.or, not = B.not
+    , beq = B.equals2, assert = B.assert
     }
 
 binary_fixed_plain :: Int 

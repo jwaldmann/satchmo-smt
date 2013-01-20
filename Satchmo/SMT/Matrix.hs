@@ -87,7 +87,7 @@ matrix  d = Dictionary
           else error $ "Matrix.positive " ++ show (dim m)
     , add = \ a b -> case (a,b) of
         _ | dim a /= dim b -> 
-              error $ "Matrix.add " ++ show (dim a,dim b)
+              error $ "Satchmo.SMT.Matrix.add dimension error: " ++ show (dim a,dim b)
         ( Zero {} , _ ) -> return b
         ( _ , Zero {} ) -> return a       
         _ -> do
@@ -99,7 +99,7 @@ matrix  d = Dictionary
                             , contents = css }
     , times = \ a b -> case (a,b) of
         _ | from a /= to b -> 
-              error $ "Matrix.times " ++ show (dim a,dim b)
+              error $ "Satchmo.SMT.Matrix.times dimension error: " ++ show (dim a,dim b)
         (Zero{}, _) -> 
                  return $ a { dim = (to a, from b) }
         (_, Zero{}) -> 
@@ -120,6 +120,8 @@ matrix  d = Dictionary
             return $ Matrix { dim = (to a,from b)
                             , contents = css }
     , strictly_greater = \ a b -> case D.domain d of
+       _ | dim a /= dim b -> 
+          error $ "Satchmo.SMT.Matrix.strictly_greater: incompatible dimensions " ++ show (dim a) ++ show (dim b)
        D.Int -> case (a,b) of
          (Zero{}, _) -> D.bconstant d False
          (Unit{}, Zero{}) -> D.bconstant d True
@@ -144,6 +146,8 @@ matrix  d = Dictionary
              cs <- forM xys $ \ (x,y) -> D.gt d x y
              D.and d cs
     , weakly_greater = \ a b -> case D.domain d of
+       _ | dim a /= dim b -> 
+          error $ "Satchmo.SMT.Matrix.weakly_greater: incompatible dimensions " ++ show (dim a) ++ show (dim b)
        _ | D.domain d `elem` 
              [D.Int, D.Arctic] -> case (a,b) of
          (_, Zero{}) -> D.bconstant d True
