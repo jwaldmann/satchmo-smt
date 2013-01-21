@@ -59,13 +59,13 @@ linear d = Dictionary
         return $ Linear { dim = dim f
                         , abs = a, lin = ls }
     , substitute = \ f gs -> do
-        as <- forM (  zip (lin f) (map abs gs)) 
-           $ \ (l,a) -> M.times d l a
+        as <- strictZipWithM "sub.1"
+             (M.times d) (lin f) (map abs gs)
         a <- M.bfoldM (M.add d) $ abs f : as
         ls <- forM (transpose $ map lin gs) 
             $ \ ms -> do
-                out <- forM ( zip (lin f) ms ) 
-                   $ \ (l,m) -> M.times d l m
+                out <- strictZipWithM "sub.2"
+                      (M.times d) (lin f) ms
                 M.bfoldM (M.add d) out
         return $ Linear 
                { dim = (to f, case gs of
@@ -92,22 +92,36 @@ linear d = Dictionary
     , strictly_greater = \ f g -> case M.domain d of
         D.Int -> do
           a <- M.strictly_greater d (abs f) (abs g)
-          ls <- forM (zip (lin f) (lin g)) $ \ (a,b) ->
-             M.weakly_greater d a b
+          ls <- strictZipWithM "strictly_greater.Int"
+              (M.weakly_greater d) (lin f) (lin g)
           M.and d $ a : ls
         D.Arctic -> do
-          a <- M.strictly_greater d (abs f) (abs g)
-          ls <- forM (zip (lin f) (lin g)) $ \ (a,b) ->
-             M.strictly_greater d a b
-          M.and d $ a : ls
+          ls <- strictZipWithM "strictly_greater.Arctic"
+           (M.strictly_greater d) 
+                    (abs f : lin f) (abs g : lin g)
+          M.and d $ ls
       , weakly_greater = \ f g -> do
-        ls <- forM (zip (abs f : lin f)(abs g : lin g))
-            $ \ (a,b) -> M.weakly_greater d a b
-        M.and d $ ls
+          ls <- strictZipWithM "weakly_greater"
+             (M.weakly_greater d) 
+                    (abs f : lin f) (abs g : lin g)
+          M.and d $ ls
 
     , Satchmo.SMT.Linear.and = M.and d
     , Satchmo.SMT.Linear.assert = M.assert d
     , Satchmo.SMT.Linear.bconstant = M.bconstant d
 
     }
- 
+
+strictZipWithM msg f xs ys = 
+    if length xs /= length ys 
+    then error $ unwords [ "strictZipWithM", msg
+                         , show (length xs,length ys)
+                         ]
+    else zipWithM f xs ys
+    
+zipWithM f xs ys = case (xs,ys) of
+    (x:xs, y:ys) -> do
+        zs <- zipWithM f xs ys
+        z <- f x y
+        return $ z : zs
+    _ -> return []
