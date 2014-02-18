@@ -8,9 +8,11 @@
 module Satchmo.SMT.Exotic.Tropical where
 
 import qualified Satchmo.SMT.Dictionary as D
+import Satchmo.SMT.Dictionary hiding ( Tropical )
 
-import Satchmo.SMT.Exotic.Dict
 import Language.SMTLIB
+
+import Prelude hiding ( not, and, or )
 
 import qualified Data.Map as M
 
@@ -21,9 +23,10 @@ import qualified Satchmo.Unary as N
 
 import qualified Satchmo.Boolean as B
 
-import Satchmo.Code
 import Satchmo.SAT.Mini (SAT)
 import Satchmo.SMT.Exotic.Util ( for )
+
+import qualified Satchmo.Code as C
 
 import Control.Monad ( foldM, forM, guard, when )
 
@@ -34,32 +37,30 @@ data Tropical = Tropical { contents :: N.Number }
 
 plus_infinite = last . N.bits . contents
 
-instance ( Decode m B.Boolean Bool )
-         => Decode m Tropical ( T.Tropical Integer ) where
-    decode a = do
-        p <- decode $ plus_infinite a
-        c <- decode $ contents a
-        return $ if p then T.Plus_Infinite else T.Finite c
 
 make c = do
     return $ Tropical { contents = c }
 
 dict :: Int 
-     -> Dict SAT ( T.Tropical Integer ) Tropical B.Boolean
-dict bits = Dict { domain = D.Tropical 
-  , fresh = do
+     -> Dictionary SAT Tropical ( T.Tropical Integer )  B.Boolean
+dict bits = Dictionary { domain = D.Tropical 
+  , number = do
     c <- N.number bits
     make c
-  , finite = \ x -> return $ B.not $ plus_infinite x
+  , decode = \ a -> do
+        p <- C.decode $ plus_infinite a
+        c <- C.decode $ contents a
+        return $ if p then T.Plus_Infinite else T.Finite c
+  , positive = \ x -> return $ B.not $ plus_infinite x
   , ge = \ l r -> N.ge ( contents l ) ( contents r ) 
-  , gg = \ l r ->
+  , gt = \ l r ->
     B.monadic B.or [ return $ plus_infinite l
                    , N.gt ( contents l ) ( contents r ) 
                    ]
-  , plus = \ xs -> do 
-    c <- X.minimum $ for xs contents
+  , add = \ x y -> do 
+    c <- X.minimum $ for [x,y] contents
     make c
-  , times = \ [s,t] -> do
+  , times = \ s t -> do
           p <- B.or [ plus_infinite s, plus_infinite t ]
           let a = contents s ; b = contents t
           let width = length $ N.bits a
@@ -76,5 +77,12 @@ dict bits = Dict { domain = D.Tropical
           -- if result is not plus_inf, then overflow is not allowed
           B.assert [ p , B.not $ last cs ]
           make $ N.make cs
+    , boolean = B.boolean
+    , bconstant = B.constant
+    , and = B.and
+    , or = B.or
+    , not = B.not 
+    , beq = B.equals2
+    , assert = B.assert
   }
 

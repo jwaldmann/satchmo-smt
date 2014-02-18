@@ -135,8 +135,17 @@ matrix  d = Dictionary
              cs <- forM rest $ \ (x,y) -> D.ge d x y
              D.and d $ c : cs     
        D.Arctic -> case (a,b) of
-         (_, Zero{}) -> D.bconstant d True
-         (Unit{}, Zero{}) -> D.bconstant d True
+         (_     , Zero{}) -> D.bconstant d True
+         (Unit{}, Unit{}) -> D.bconstant d False
+         _ -> do
+             ea <- expand d a ; eb <- expand d b
+             let xys =  
+                    zip (concat $ contents ea) 
+                        (concat $ contents eb)
+             cs <- forM xys $ \ (x,y) -> D.gt d x y
+             D.and d cs
+       D.Tropical -> case (a,b) of
+         (Zero{},      _) -> D.bconstant d True
          (Unit{}, Unit{}) -> D.bconstant d False
          _ -> do
              ea <- expand d a ; eb <- expand d b
@@ -152,6 +161,15 @@ matrix  d = Dictionary
              [D.Int, D.Arctic] -> case (a,b) of
          (_, Zero{}) -> D.bconstant d True
          (Zero{}, Unit{}) -> D.bconstant d False
+         (Unit{}, Unit{}) -> D.bconstant d True
+         _ -> do
+             ea <- expand d a ; eb <- expand d b
+             cs <- forM ( zip (concat $ contents ea) 
+                              (concat $ contents eb))
+                 $ \ (x,y) -> D.ge d x y
+             D.and d cs     
+       D.Tropical -> case (a,b) of
+         (Zero{}, _ ) -> D.bconstant d True
          (Unit{}, Unit{}) -> D.bconstant d True
          _ -> do
              ea <- expand d a ; eb <- expand d b

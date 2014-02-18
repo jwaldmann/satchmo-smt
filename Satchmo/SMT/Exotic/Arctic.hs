@@ -4,10 +4,13 @@
 
 module Satchmo.SMT.Exotic.Arctic where
 
-import Satchmo.SMT.Exotic.Dict
+-- import Satchmo.SMT.Exotic.Dict
+import Satchmo.SMT.Dictionary  hiding ( Arctic )
+import qualified Satchmo.SMT.Dictionary  as D
+
 import Language.SMTLIB
 
-import qualified Satchmo.SMT.Dictionary as D
+import Prelude hiding ( not, and, or )
 
 import qualified Data.Map as M
 
@@ -15,7 +18,7 @@ import qualified Satchmo.Unary.Op.Flexible as X
 import qualified Satchmo.Unary as N
 import qualified Satchmo.Boolean as B
 
-import Satchmo.Code
+import qualified Satchmo.Code as C
 import Satchmo.SAT.Mini (SAT)
 import Control.Monad (forM, guard, when)
 
@@ -27,31 +30,28 @@ data Arctic = Arctic { contents :: N.Number
 
 minus_infinite = B.not . head . N.bits . contents
 
-instance ( Decode m B.Boolean Bool )
-         => Decode m Arctic ( A.Arctic Integer ) where
-    decode a = do
-        c <- decode $ contents a
-        return $ if 0 == c then A.Minus_Infinite else A.Finite (c-1)
-
 make c = do
     return $ Arctic { contents = c }
 
 dict :: Int 
-     -> Dict SAT ( A.Arctic Integer ) Arctic B.Boolean
-dict bits = Dict { domain = D.Arctic 
-  , fresh = do
+     -> Dictionary SAT Arctic ( A.Arctic Integer ) B.Boolean
+dict bits = Dictionary { domain = D.Arctic 
+  , number = do
     c <- N.number bits
     make c
-  , finite = \ x -> return $ B.not $ minus_infinite x
+  , decode = \ a -> do
+        c <- C.decode $ contents a
+        return $ if 0 == c then A.Minus_Infinite else A.Finite (c-1)
+  , positive = \ x -> return $ B.not $ minus_infinite x
   , ge = \ l r -> N.ge ( contents l ) ( contents r ) 
-  , gg = \ l r ->
+  , gt = \ l r ->
     B.monadic B.or [ return $ minus_infinite r
                    , N.gt ( contents l ) ( contents r ) 
                    ]
-  , plus = \ xs -> do 
-    c <- X.maximum $ map contents xs
+  , add = \ x y -> do 
+    c <- X.maximum $ map contents [x,y]
     make c
-  , times = \ [s,t] -> do
+  , times = \ s t -> do
           m <- B.or [ minus_infinite s, minus_infinite t ]
           let a = contents s ; b = contents t
           let width = length $ N.bits a
@@ -67,5 +67,13 @@ dict bits = Dict { domain = D.Arctic
           B.assert [ B.not $ last cs ]
           ds <- forM (init cs) $ \ c -> B.and [ B.not m, c ]
           make $ N.make ds
+
+    , boolean = B.boolean
+    , bconstant = B.constant
+    , and = B.and
+    , or = B.or
+    , not = B.not 
+    , beq = B.equals2
+    , assert = B.assert
   }
 
