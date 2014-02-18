@@ -13,7 +13,7 @@ Cabal-version: >= 1.2
 Build-type: Simple
 
 Library
-    build-depends: satchmo>=2.1, smt-lib>=0.0.4,
+    build-depends: satchmo>=2.8, smt-lib>=0.0.4,
         obdd>=0.2.5,
         process, base==4.*, containers, array, mtl
     exposed-modules: 
@@ -47,7 +47,7 @@ Executable satchmo-smt
     Main-is: Main.hs
     ghc-options: -threaded -rtsopts
     hs-source-dirs:	.
-    Build-depends: satchmo>=2.1, smt-lib>=0.0.4,
+    Build-depends: satchmo>=2.8, smt-lib>=0.0.4,
         process, base == 4.*, containers, array, mtl
 	
 

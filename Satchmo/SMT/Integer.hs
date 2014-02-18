@@ -9,7 +9,7 @@ import Language.SMTLIB
 import Satchmo.SMT.Config
 
 import Satchmo.SMT.Dictionary
-import Satchmo.SMT.Exotic.Semiring.Natural
+import Satchmo.SMT.Exotic.Semiring.Integer
 import qualified Satchmo.SAT.Mini
 import qualified Satchmo.Code
 import qualified Satchmo.Boolean as B
