@@ -1,5 +1,5 @@
 Name:           satchmo-smt
-Version:        0.4
+Version:        0.4.1
 
 License:        GPL
 License-file:	gpl-2.0.txt
@@ -36,7 +36,7 @@ Library
         -- Satchmo.SMT.Solve
         Satchmo.SMT.Dictionary
         Satchmo.SMT.Integer
-        -- Satchmo.SMT.Arctic
+        Satchmo.SMT.Arctic
         Satchmo.SMT.Opt.Integer
         Satchmo.SMT.Opt.Base
         Satchmo.SMT.Matrix
