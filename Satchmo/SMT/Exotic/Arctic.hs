@@ -39,6 +39,12 @@ dict bits = Dictionary { domain = D.Arctic
   , number = do
     c <- N.number bits
     make c
+  , nconstant = \ n -> do
+        t <- B.constant True ; f <- B.constant False
+        let nu k = N.make $ replicate k t ++ replicate (bits - k) f
+        return $ Arctic $ nu $ fromInteger $ case n of
+             A.Minus_Infinite -> 0
+             A.Finite c -> c+1
   , decode = \ a -> do
         c <- C.decode $ contents a
         return $ if 0 == c then A.Minus_Infinite else A.Finite (c-1)
