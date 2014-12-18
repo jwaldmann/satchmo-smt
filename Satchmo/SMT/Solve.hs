@@ -203,7 +203,7 @@ term dict f = case f of
     Term_qual_identifier_ ( Qual_identifier ( Identifier fun  )) args -> 
         case fun of
             "not" -> do [Code_Bool x] <- forM args $ term dict 
-                        lift $ return $ Code_Bool $ not dict x
+                        fmap Code_Bool $ lift $ not dict x
             "and" -> do xs <- forM args $ term dict 
                         fmap Code_Bool $ lift $ and dict $ map unbool xs
             "or" -> do xs <- forM args $ term dict 

@@ -23,7 +23,7 @@ data Dictionary m num val bool = Dictionary
     , bconstant :: Bool -> m bool
     , and :: [ bool ] -> m bool
     , or :: [ bool ] -> m bool
-    , not :: bool -> bool
+    , not :: bool -> m bool
     , beq :: bool -> bool -> m bool
     , assert :: [ bool ] -> m ()
     }

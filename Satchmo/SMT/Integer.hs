@@ -42,7 +42,7 @@ direct = Dictionary
     , ge = \ x y -> return $ x >= y 
     , and = \ xs -> return $ Prelude.and xs
     , or  = \ xs -> return $ Prelude.or xs
-    , not = Prelude.not 
+    , not = return . Prelude.not 
     , assert = \ bs -> 
           if Prelude.or bs then return () 
           else throwError "Satchmo.SMT.Integer.assert"
@@ -64,7 +64,7 @@ unary_fixed bits a = Dictionary
     , gt = Un.gt
     , ge = Un.ge
     , neq = Un.eq
-    , and = B.and, or = B.or, not = B.not, beq = B.equals2, assert = B.assert
+    , and = B.and, or = B.or, not = return . B.not, beq = B.equals2, assert = B.assert
     }
 
 unary_flexible :: Int -> Unary_Addition
@@ -83,7 +83,7 @@ unary_flexible bits a = Dictionary
     , gt = Un.gt
     , ge = Un.ge
     , neq = Un.eq
-    , and = B.and, or = B.or, not = B.not, beq = B.equals2, assert = B.assert
+    , and = B.and, or = B.or, not = return . B.not, beq = B.equals2, assert = B.assert
     }
 
 binary_fixed bits =
@@ -124,7 +124,7 @@ binary_fixed_opt bits = Dictionary
        -- Bin.ge
     -- , neq = OI.prop2 ( OB.improve $ OB.rel2 (/=) bits) 
     
-    , and = B.and, or = B.or, not = B.not
+    , and = B.and, or = B.or, not = return . B.not
     , beq = B.equals2, assert = B.assert
     }
 
@@ -145,7 +145,7 @@ binary_fixed_plain bits = Dictionary
     , gt = Bin.gt
     , ge = Bin.ge
     , neq = Bin.eq
-    , and = B.and, or = B.or, not = B.not, beq = B.equals2, assert = B.assert
+    , and = B.and, or = B.or, not = return . B.not, beq = B.equals2, assert = B.assert
     }
 
 binary_flexible :: Int -> Dictionary Satchmo.SAT.Mini.SAT Bin.Number Integer B.Boolean
@@ -163,7 +163,7 @@ binary_flexible bits = Dictionary
     , gt = Bin.gt
     , ge = Bin.ge
     , neq = Bin.eq
-    , and = B.and, or = B.or, not = B.not, beq = B.equals2, assert = B.assert
+    , and = B.and, or = B.or, not = return . B.not, beq = B.equals2, assert = B.assert
     }
 
 instance ToTerm Integer where

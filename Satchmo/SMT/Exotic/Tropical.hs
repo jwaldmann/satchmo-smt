@@ -81,7 +81,7 @@ dict bits = Dictionary { domain = D.Tropical
     , bconstant = B.constant
     , and = B.and
     , or = B.or
-    , not = B.not 
+    , not = return . B.not 
     , beq = B.equals2
     , assert = B.assert
   }

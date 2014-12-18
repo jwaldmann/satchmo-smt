@@ -28,7 +28,7 @@ direct = Dictionary
     , ge = \ x y -> return $ S.ge x y 
     , and = \ xs -> return $ Prelude.and xs
     , or  = \ xs -> return $ Prelude.or xs
-    , not = Prelude.not 
+    , not = return . Prelude.not 
     , assert = \ bs -> if Prelude.or bs then return () 
        else throwError "Satchmo.SMT.Arctic.assert"
     }

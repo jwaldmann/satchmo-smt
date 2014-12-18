@@ -78,7 +78,7 @@ dict bits = Dictionary { domain = D.Arctic
     , bconstant = B.constant
     , and = B.and
     , or = B.or
-    , not = B.not 
+    , not = return . B.not 
     , beq = B.equals2
     , assert = B.assert
   }
